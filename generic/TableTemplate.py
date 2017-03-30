@@ -1,4 +1,3 @@
-# TODO Todavia queda JavaScript en los titulos, la paginacion y en el borrado.
 
 table_tb_reset = """
 <!-- Start Block for Reset button -->

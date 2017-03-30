@@ -13,41 +13,6 @@ from .commonTemplates import tool_bar_begin, tool_bar_end
 from .GridTemplate import basic_grid_html, grid_load_template, back_html, \
     edit_html, update_html, new_html, child_grid_html
 """
-    By Django Design(?) when sub-classing, the "rules" appears to be:
-
-
-
-    django.view.generic.base.py
-    * ContextMixin(object)                                          Define get_context_data(self, **kwargs) method.
-    * TemplateResponseMixin(object)                                 Define 4 attributes and render_to_response,
-                                                                    get_templates_names methods.
-
-    django.view.generic.detail.py
-    * SingleObjectMixin(ContextMixin)                               Define 5 methods and 7 attributes.
-    * SingleObjectTemplateResponseMixin(TemplateResponseMixin)      Define 2 attributes and get_templates_names method.
-
-    django.view.generic.edit.py
-    * FormMixin(ContextMixin)                                       Define 9 methods and 4 attributes.
-    * ModelFormMixin(FormMixin, SingleObjectMixin)                  Define get_form_class, get_form_kwargs,
-                                                                    get_success_url, form_valid
-    * ProcessFormView(View)                                         Define simple get and post and put methods
-    * BaseFormView(FormMixin, ProcessFormView)                      Do nothing.
-    * FormView(TemplateResponseMixin, BaseFormView)                 Do nothing.
-    * BaseCreateView(ModelFormMixin, ProcessFormView)               Define simple get and post methods
-    * CreateView(SingleObjectTemplateResponseMixin, BaseCreateView) redefine template_name_sufix = '_form'
-    * BaseUpdateView(ModelFormMixin, ProcessFormView)               Define simple get and post methods
-    * UpdateView(SingleObjectTemplateResponseMixin, BaseUpdateView) redefine template_name_sufix = '_form'
-    * DeletionMixin(object)                                         Define method delete, post, and get_success_url
-    * BaseDeleteView(DeletionMixin, BaseDetailView)                 Do nothing.
-    * DeleteView(SingleObjectTemplateResponseMixin, BaseDeleteView) Do nothing.
-    Notes:
-        ModelFormMixin is twice a sub-class of ContextMixin
-        BaseCreateView and BaseUpdateView are sub-class of ModelFormMixin
-
-    * What came from ModelFormMixin are joined with ProcessFormView and gives BaseAlterView.
-    * What came from TemplateResponseMixin(object) is joined with BaseAlterView and gives the View.
-
-    Following 'this logic' the Grid Tree Class should be:
     * BasicGridTemplateResponseMixin(object).                       Define 4 attributes and render_to_response,
                                                                     get_template
     * VariableGridTemplateResponseMixin(GridTemplateResponseMixin)  Define get_template
@@ -122,11 +87,6 @@ from .GridTemplate import basic_grid_html, grid_load_template, back_html, \
         template = self.get_template()
     After all there is only one template to render, so there is no need for a list of templates.
 """
-# TODO Pendientes
-# TODO              * Si model_form no es provisto entonces self.fields = '__all__' en __init__ BasicGridMixin.
-# TODO              * Sacar la mayor cantidad de codigo javascript?
-# TODO Errores
-
 
 class GridTemplateResponseMixin(object):
     """
@@ -346,12 +306,6 @@ class GridBaseViewMixin(GridProcessView):
     def get(self, request, *args, **kwargs):
         """
 
-        :param template:
-        :param model:
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         self.object = self.get_object()
         self.form_instance = self.get_form()
@@ -379,8 +333,6 @@ class BasicGridMixin(ModelFormMixin):
                                 None in template the action will be:
                                 <form ... action="{% url back_view back_view_id %}" ...>
     """
-    # TODO Arreglar BasicGridMixin para que si no se prove model_form se use field = '__all__' se imite a como Django
-    # TODO construye el formulario
     fields = None
     form_instance = None  # Used for instance a Model Form object.
     read_only = True        # Field are read only. If this attribute is True then get_grid_data will use the Model Form
@@ -429,12 +381,6 @@ class BasicGridMixin(ModelFormMixin):
     def get_context_data(self, **kwargs):
         """
 
-        :param template:
-        :param model:
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         # The context data
         _data_grid = self.get_grid_data(self.grid)
@@ -686,19 +632,8 @@ class VariableGridBaseViewMixin(BasicGridMixin, GridProcessView):
     def get(self, request, *args, **kwargs):
         """
 
-        :param template:
-        :param model:
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         self.read_only = True
-        # 17:30 hasta 17:34
-        #try:
-        #    self.object = self.get_object()
-        #except:
-        #    raise TypeError("VariableGridBaseViewMixin could not found and objecto to expose.")
         try:
             self.object = self.get_object()
         except:
@@ -730,12 +665,6 @@ class VariableGridBaseViewMixin(BasicGridMixin, GridProcessView):
     def post(self, request, *args, **kwargs):
         """
 
-        :param template:
-        :param model:
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         self.read_only = False
         if self._update_able is None and 'update' in request.POST:
@@ -793,11 +722,6 @@ class VariableGridBaseViewMixin(BasicGridMixin, GridProcessView):
     def generic_new(self, request, *args, **kwargs):
         """
 
-        :param template:
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         self.object = None
         self.form_instance = self.get_form()
@@ -805,34 +729,9 @@ class VariableGridBaseViewMixin(BasicGridMixin, GridProcessView):
 
     def generic_update(self, request, *args, **kwargs):
         """
-
-        :param template:
-        :param model:
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         self.form_instance = self.get_form()  # Needed when form is not valid and need errors as feedback.
         return super(VariableGridBaseViewMixin, self).post(request, *args, **kwargs)
-        # self.form_instance = self.get_form()
-        # template = self.get_template()
-        # request_context = RequestContext(request)
-        #
-        # # self.form_instance = self.model_form(request.POST or None, instance=model)
-        # if self.form_instance.is_valid():
-        #     self.form_instance.save()
-        #     # Translators: This message goes trough Django's messages framework with messages.success
-        #     messages.success(request, _('It has been modify the registry: ') + kwargs['pk'])
-        #     context = self.get_context_data(**kwargs)
-        # else:
-        #     # Translators: This message goes trough Django's messages framework with messages.error
-        #     messages.error(request, _('The form has fail for registry: ') + kwargs['pk'])
-        #     context = super(GridObjectMixin, self).get_context_data(form=self.form_instance)
-        #     request_context.push(context)
-        #     context = self.get_context_data(**kwargs)
-        # request_context.push(context)
-        # return HttpResponse(template.render(request_context))
 
 
 class ParentGridBaseViewMixin(VariableGridBaseViewMixin):
@@ -844,10 +743,6 @@ class ParentGridBaseViewMixin(VariableGridBaseViewMixin):
     def get(self, request, *args, **kwargs):
         """
 
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         if self.child_table_view is None:
             raise ImproperlyConfigured("ParentGridBaseViewMixin require child_table_view attribute.")
@@ -856,8 +751,6 @@ class ParentGridBaseViewMixin(VariableGridBaseViewMixin):
     def get_context_data(self, **kwargs):
         """
 
-        :param kwargs:
-        :return:
         """
         if self.object is not None:
             kwargs['child_table_view'] = self.app_name + ':' + self.child_table_view
@@ -887,10 +780,6 @@ class ChildGridBaseViewMixin(VariableGridBaseViewMixin):
     def get(self, request, *args, **kwargs):
         """
 
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         _get_data = request.GET
         if 'parent_id' in _get_data:
@@ -899,13 +788,7 @@ class ChildGridBaseViewMixin(VariableGridBaseViewMixin):
         return super(ChildGridBaseViewMixin, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        """
 
-        :param kwargs:
-        :return:
-        """
-
-        # TODO Esta parte del codigo puede ser algo sucia, es para que funcione el boton back: Analizar.
         if self.back_view_id is None:
             # Exposing an object.
             self.back_view_id = getattr(self.object, self.foreign_key + '_id')

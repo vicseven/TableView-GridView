@@ -29,10 +29,6 @@ from .TableTemplate import toolbar_table_html, \
     form_create_child_table_html
 from .images import search_png, delete_png, order_a_png, order_d_png
 
-# TODO Pendientes
-# TODO              * Sacar la mayor cantidad de codigo javascript?
-# TODO Errores
-
 
 class SortMixin(ContextMixin):
     """
@@ -54,7 +50,6 @@ class SortMixin(ContextMixin):
     If empty string is received as GET parameter (no sort_by parameter) initial_order will be used. If no
     initia_order is supplied SortMixin will raise an "No initial order" error.
     """
-    # TODO Se debe definir si initial_order es concerniente a SortMixin o no. Pero si se usa en SortMixin
     sort_by = None
     last_sort = None
 
@@ -87,8 +82,6 @@ class SortMixin(ContextMixin):
     def get_context_data(self, **kwargs):
         """
 
-        :param kwargs:
-        :return:
         """
         if self.last_sort is None:
             self.last_sort = ''
@@ -107,7 +100,6 @@ class SearchMixin(MultipleObjectMixin):
     Fields and criteria for Search must be declared in search_by list. Search values must be supplied
     through GET 'search' parameter.
     """
-    # TODO Reveer la definicion de search_by
     search_by = []
     filter_behavior = '__icontains'
     search_data = None
@@ -166,8 +158,6 @@ class SearchMixin(MultipleObjectMixin):
     def get_context_data(self, **kwargs):
         """
 
-        :param kwargs:
-        :return:
         """
         if self.search_for is None:
             self.search_for = ''
@@ -212,8 +202,6 @@ class TableBaseMixin(SearchMixin, SortMixin):
     Keep in main that _html_class are for cells, together will implement the Style for the entire column (from the Title
     to the data cells) defined by the virtual table tuple.
     """
-    # TODO Arreglar TableBaseMixin para que si no se prove model_form se use field = '__all__' se imite a como Django
-    # TODO construye el formulario
     model_form = None
     primary_key = None  # Needed to implement processes, link to detail, and initial order.
     columns = None      # A list of virtual table tuples in the order in which they will be exposed as columns.
@@ -269,7 +257,6 @@ class TableBaseMixin(SearchMixin, SortMixin):
 
         :returns a context
         """
-        # TODO Cada Mixin deberia preparar sus variables de contexto. Asi tengan que heredar de ContextMixin. Sacarlas de aca
         _processes_link = []
         if self.processes is not None:
             for process_name, process_view, html_code, form_attribute in self.processes:
@@ -317,7 +304,6 @@ class TableBaseMixin(SearchMixin, SortMixin):
 
         :return: a complete 7 element virtual table tuple
         """
-        # TODO get_complete_tuple debe tener la misma logica en grid.py y en table.py
         _tuple_len = len(_tuple)
         if _tuple_len > 7:
             raise TypeError("Virtual table tuples could have up to 7 elements. More were received")
@@ -343,7 +329,6 @@ class TableBaseMixin(SearchMixin, SortMixin):
            raise TypeError("Virtual table tuples could not have 1 element only.")
 
     def get_table_data(self):
-        # TODO Son necesarios _data_title_complete y _data_filter_complete?
         """
         Prepare the 3 data structures needed for building a data table
 
@@ -487,8 +472,6 @@ class ChildTableBaseMixin(TableBaseMixin):
     def get_context_data(self, **kwargs):
         """
 
-        :param kwargs:
-        :return:
         """
         kwargs['parent_model'] = self.parent_model
         kwargs['parent_id'] = self.parent_id
@@ -663,10 +646,6 @@ class BaseChildTableView(ChildTableTemplateResponseMixin, BaseTableView, SingleO
     def get(self, request, *args, **kwargs):
         """
 
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
         self.object = self.get_object(self.parent_model.objects.all())
         if self.object is None:
